@@ -37,17 +37,30 @@ export const EditorArea: React.FC<EditorAreaProps> = ({
     }
   };
 
+  const getComputedColorValue = (cssVariable: string) => {
+    const root = document.documentElement;
+    const computedValue = getComputedStyle(root).getPropertyValue(cssVariable).trim();
+    return `hsl(${computedValue})`;
+  };
+
   const handleEditorDidMount = (editor: any, monaco: any) => {
-    // Configure Monaco Editor theme
+    // Get computed color values from CSS custom properties
+    const syntaxComment = getComputedColorValue('--syntax-comment');
+    const syntaxKeyword = getComputedColorValue('--syntax-keyword');
+    const syntaxString = getComputedColorValue('--syntax-string');
+    const syntaxNumber = getComputedColorValue('--syntax-number');
+    const syntaxFunction = getComputedColorValue('--syntax-function');
+
+    // Configure Monaco Editor theme with actual color values
     monaco.editor.defineTheme('ide-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: 'comment', foreground: 'hsl(var(--syntax-comment))' },
-        { token: 'keyword', foreground: 'hsl(var(--syntax-keyword))' },
-        { token: 'string', foreground: 'hsl(var(--syntax-string))' },
-        { token: 'number', foreground: 'hsl(var(--syntax-number))' },
-        { token: 'function', foreground: 'hsl(var(--syntax-function))' },
+        { token: 'comment', foreground: syntaxComment.replace('hsl(', '').replace(')', '').split(' ').join('').replace(/%/g, '') },
+        { token: 'keyword', foreground: syntaxKeyword.replace('hsl(', '').replace(')', '').split(' ').join('').replace(/%/g, '') },
+        { token: 'string', foreground: syntaxString.replace('hsl(', '').replace(')', '').split(' ').join('').replace(/%/g, '') },
+        { token: 'number', foreground: syntaxNumber.replace('hsl(', '').replace(')', '').split(' ').join('').replace(/%/g, '') },
+        { token: 'function', foreground: syntaxFunction.replace('hsl(', '').replace(')', '').split(' ').join('').replace(/%/g, '') },
       ],
       colors: {
         'editor.background': '#1a1d23',
