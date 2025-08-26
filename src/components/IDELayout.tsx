@@ -4,21 +4,22 @@ import { FileExplorer } from './FileExplorer';
 import { EditorArea } from './EditorArea';
 import { Terminal } from './Terminal';
 import { AIAssistant } from './AIAssistant';
+import { AIAgentMode } from './AIAgentMode';
 import { StatusBar } from './StatusBar';
-import { Sidebar, Menu, Code, Bot, Terminal as TerminalIcon } from 'lucide-react';
+import { Sidebar, Menu, Code, Bot, Terminal as TerminalIcon, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const IDELayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activePanel, setActivePanel] = useState<'terminal' | 'ai' | null>('terminal');
+  const [activePanel, setActivePanel] = useState<'terminal' | 'ai' | 'agent' | null>('terminal');
   const [openFiles, setOpenFiles] = useState([
-    { name: 'welcome.js', content: '// Welcome to your new IDE!\nconsole.log("Hello, World!");', language: 'javascript' }
+    { name: 'welcome.js', content: '// Welcome to your AI-powered IDE!\n// Now with free unlimited AI agents!\nconsole.log("Hello, AI World!");', language: 'javascript' }
   ]);
   const [activeFileIndex, setActiveFileIndex] = useState(0);
 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
   
-  const togglePanel = (panel: 'terminal' | 'ai') => {
+  const togglePanel = (panel: 'terminal' | 'ai' | 'agent') => {
     setActivePanel(activePanel === panel ? null : panel);
   };
 
@@ -37,6 +38,9 @@ export const IDELayout = () => {
         <div className="flex items-center gap-2">
           <Code className="w-5 h-5 text-primary" />
           <span className="font-semibold text-foreground">WebIDE</span>
+          <div className="px-2 py-1 bg-ai-accent/20 text-ai-accent text-xs rounded-full">
+            AI-Powered
+          </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <Button
@@ -54,6 +58,17 @@ export const IDELayout = () => {
             className="p-2"
           >
             <Bot className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={activePanel === 'agent' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => togglePanel('agent')}
+            className="p-2 relative"
+          >
+            <Zap className="w-4 h-4" />
+            {activePanel === 'agent' && (
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-ai-accent rounded-full animate-pulse"></div>
+            )}
           </Button>
         </div>
       </div>
@@ -84,6 +99,7 @@ export const IDELayout = () => {
             <div className="h-80 border-t border-border">
               {activePanel === 'terminal' && <Terminal />}
               {activePanel === 'ai' && <AIAssistant />}
+              {activePanel === 'agent' && <AIAgentMode />}
             </div>
           )}
         </div>
