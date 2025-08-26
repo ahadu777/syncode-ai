@@ -1,96 +1,68 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Import Fira Code for the editor */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* IDE Design System - All colors, gradients, fonts, etc defined here */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* IDE Dark Theme Colors */
+    --background: 220 13% 9%;           /* Deep editor background */
+    --foreground: 220 9% 88%;           /* Primary text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 13% 11%;                /* Panel backgrounds */
+    --card-foreground: 220 9% 88%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 13% 11%;
+    --popover-foreground: 220 9% 88%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 210 100% 56%;            /* Electric blue accent */
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 13% 16%;           /* Secondary panels */
+    --secondary-foreground: 220 9% 88%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 13% 14%;               /* Subtle backgrounds */
+    --muted-foreground: 220 9% 65%;     /* Muted text */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 142 71% 45%;              /* Green success color */
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;           /* Error red */
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 18%;              /* Borders and dividers */
+    --input: 220 13% 16%;               /* Input backgrounds */
+    --ring: 210 100% 56%;               /* Focus rings */
 
-    --radius: 0.5rem;
+    --radius: 0.375rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* IDE Specific Colors */
+    --editor-background: 220 13% 9%;
+    --sidebar-background: 220 13% 11%;
+    --tab-background: 220 13% 14%;
+    --tab-active: 220 13% 16%;
+    --terminal-background: 220 13% 8%;
+    --status-bar: 220 13% 12%;
+    
+    /* Syntax Highlighting */
+    --syntax-keyword: 210 100% 66%;     /* Blue keywords */
+    --syntax-string: 142 71% 65%;       /* Green strings */
+    --syntax-number: 25 95% 63%;        /* Orange numbers */
+    --syntax-comment: 220 9% 55%;       /* Gray comments */
+    --syntax-function: 271 81% 56%;     /* Purple functions */
+    --syntax-variable: 220 9% 88%;      /* White variables */
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* AI Assistant Colors */
+    --ai-accent: 271 81% 56%;           /* Purple for AI features */
+    --ai-accent-foreground: 0 0% 98%;
+    --ai-thinking: 45 93% 47%;          /* Amber thinking state */
+    --ai-success: 142 71% 45%;          /* Green success */
   }
 }
 
@@ -100,6 +72,129 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+  /* IDE Layout Classes */
+  .ide-layout {
+    @apply h-screen w-full flex flex-col bg-[hsl(var(--editor-background))];
+  }
+
+  .ide-sidebar {
+    @apply bg-[hsl(var(--sidebar-background))] border-r border-border;
+  }
+
+  .ide-editor-area {
+    @apply bg-[hsl(var(--editor-background))] flex-1;
+  }
+
+  .ide-tab {
+    @apply bg-[hsl(var(--tab-background))] border-r border-border px-4 py-2 text-sm cursor-pointer hover:bg-[hsl(var(--tab-active))] transition-colors;
+  }
+
+  .ide-tab.active {
+    @apply bg-[hsl(var(--tab-active))] text-foreground;
+  }
+
+  .ide-terminal {
+    @apply bg-[hsl(var(--terminal-background))] border-t border-border font-mono text-sm;
+  }
+
+  .ide-status-bar {
+    @apply bg-[hsl(var(--status-bar))] border-t border-border px-4 py-1 text-xs flex items-center justify-between;
+  }
+
+  /* File Explorer Styles */
+  .file-explorer-item {
+    @apply px-3 py-1 text-sm cursor-pointer hover:bg-muted rounded-sm transition-colors flex items-center gap-2;
+  }
+
+  .file-explorer-item.selected {
+    @apply bg-accent/20 text-accent-foreground;
+  }
+
+  .file-explorer-folder {
+    @apply font-medium;
+  }
+
+  .file-explorer-file {
+    @apply text-muted-foreground hover:text-foreground;
+  }
+
+  /* AI Assistant Styles */
+  .ai-panel {
+    @apply bg-card border-l border-border;
+  }
+
+  .ai-message {
+    @apply p-3 rounded-lg mb-3;
+  }
+
+  .ai-message.user {
+    @apply bg-primary/10 ml-8;
+  }
+
+  .ai-message.assistant {
+    @apply bg-[hsl(var(--ai-accent))]/10 mr-8;
+  }
+
+  .ai-thinking {
+    @apply text-[hsl(var(--ai-thinking))] animate-pulse;
+  }
+
+  /* Animations */
+  .slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  .fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsl(var(--ai-accent));
+  }
+  50% {
+    box-shadow: 0 0 20px hsl(var(--ai-accent)), 0 0 30px hsl(var(--ai-accent));
+  }
+}
+
+/* Monaco Editor Overrides */
+.monaco-editor {
+  font-family: 'Fira Code', 'Monaco', 'Menlo', monospace !important;
+}
+
+.monaco-editor .margin {
+  background-color: hsl(var(--editor-background)) !important;
+}
+
+.monaco-editor .monaco-editor-background {
+  background-color: hsl(var(--editor-background)) !important;
 }

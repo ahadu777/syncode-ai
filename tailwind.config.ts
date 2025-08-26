@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,12 +62,39 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// IDE Specific Colors
+				ide: {
+					editor: 'hsl(var(--editor-background))',
+					sidebar: 'hsl(var(--sidebar-background))',
+					tab: 'hsl(var(--tab-background))',
+					'tab-active': 'hsl(var(--tab-active))',
+					terminal: 'hsl(var(--terminal-background))',
+					'status-bar': 'hsl(var(--status-bar))'
+				},
+				syntax: {
+					keyword: 'hsl(var(--syntax-keyword))',
+					string: 'hsl(var(--syntax-string))',
+					number: 'hsl(var(--syntax-number))',
+					comment: 'hsl(var(--syntax-comment))',
+					function: 'hsl(var(--syntax-function))',
+					variable: 'hsl(var(--syntax-variable))'
+				},
+				ai: {
+					accent: 'hsl(var(--ai-accent))',
+					'accent-foreground': 'hsl(var(--ai-accent-foreground))',
+					thinking: 'hsl(var(--ai-thinking))',
+					success: 'hsl(var(--ai-success))'
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			fontFamily: {
+				'mono': ['Fira Code', 'Monaco', 'Menlo', 'monospace'],
+				'sans': ['Inter', 'system-ui', '-apple-system', 'sans-serif']
 			},
 			keyframes: {
 				'accordion-down': {
@@ -84,11 +112,40 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'slide-in-right': {
+					from: {
+						transform: 'translateX(100%)',
+						opacity: '0'
+					},
+					to: {
+						transform: 'translateX(0)',
+						opacity: '1'
+					}
+				},
+				'fade-in': {
+					from: {
+						opacity: '0'
+					},
+					to: {
+						opacity: '1'
+					}
+				},
+				'pulse-glow': {
+					'0%, 100%': {
+						boxShadow: '0 0 5px hsl(var(--ai-accent))'
+					},
+					'50%': {
+						boxShadow: '0 0 20px hsl(var(--ai-accent)), 0 0 30px hsl(var(--ai-accent))'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'slide-in-right': 'slide-in-right 0.3s ease-out',
+				'fade-in': 'fade-in 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
 			}
 		}
 	},
