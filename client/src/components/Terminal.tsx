@@ -1,24 +1,30 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, Play, Square, Trash2, Github, Settings } from 'lucide-react';
+import { Terminal as TerminalIcon, Play, Square, Trash2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
-export const Terminal = () => {
-  const [output, setOutput] = useState<Array<{ type: 'input' | 'output' | 'error' | 'success'; content: string }>>([
-    { type: 'output', content: 'WebIDE Terminal v1.0.0 - GitHub Integration Enabled' },
-    { type: 'output', content: 'Type "help" for available commands or "git help" for Git commands.' },
+interface TerminalOutput {
+  type: 'input' | 'output' | 'error' | 'success';
+  content: string;
+  timestamp?: Date;
+}
+
+interface TerminalProps {
+  onFileSystemChange?: () => void;
+}
+
+export const Terminal: React.FC<TerminalProps> = ({ onFileSystemChange }) => {
+  const [output, setOutput] = useState<TerminalOutput[]>([
+    { type: 'output', content: 'WebIDE Terminal v1.0.0', timestamp: new Date() },
+    { type: 'output', content: 'Type commands to interact with the file system.', timestamp: new Date() },
   ]);
   const [currentInput, setCurrentInput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [terminalTheme, setTerminalTheme] = useState('dark');
-  const [githubToken, setGithubToken] = useState('');
-  const [currentRepo, setCurrentRepo] = useState('');
-  const [currentBranch, setCurrentBranch] = useState('main');
-  const [isConnected, setIsConnected] = useState(false);
+  const [currentPath, setCurrentPath] = useState('/workspace');
   const outputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,183 +33,247 @@ export const Terminal = () => {
     }
   }, [output]);
 
-  const connectToGithub = () => {
-    if (githubToken && currentRepo) {
-      setIsConnected(true);
-      setOutput(prev => [...prev, 
-        { type: 'success', content: `✓ Connected to GitHub repository: ${currentRepo}` },
-        { type: 'output', content: `Current branch: ${currentBranch}` }
-      ]);
-    }
+  const addOutput = (type: TerminalOutput['type'], content: string) => {
+    setOutput(prev => [...prev, { type, content, timestamp: new Date() }]);
   };
 
   const executeCommand = async (command: string) => {
     if (!command.trim()) return;
 
-    setOutput(prev => [...prev, { type: 'input', content: `$ ${command}` }]);
+    const cmd = command.trim();
+    addOutput('input', `$ ${cmd}`);
     setIsRunning(true);
 
-    // Simulate command execution
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Handle built-in commands first
+      if (cmd === 'clear') {
+        setOutput([
+          { type: 'output', content: 'WebIDE Terminal v1.0.0', timestamp: new Date() },
+          { type: 'output', content: 'Type commands to interact with the file system.', timestamp: new Date() },
+        ]);
+        setIsRunning(false);
+        return;
+      }
 
-    let result = '';
-    let resultType: 'output' | 'error' | 'success' = 'output';
+      if (cmd === 'pwd') {
+        addOutput('output', currentPath);
+        setIsRunning(false);
+        return;
+      }
 
-    const cmd = command.toLowerCase().trim();
-    const args = command.trim().split(' ');
-
-    // Git commands
-    if (cmd.startsWith('git ')) {
-      if (!isConnected && !['git help', 'git config', 'git init'].includes(cmd)) {
-        result = 'Error: Not connected to GitHub. Use terminal settings to connect first.';
-        resultType = 'error';
-      } else {
-        switch (cmd) {
-          case 'git help':
-            result = `Git commands available:
-  git status       - Show repository status
-  git branch       - List branches
-  git checkout <branch> - Switch branch
-  git pull         - Pull latest changes
-  git push         - Push changes to remote
-  git add .        - Stage all changes
-  git commit -m "message" - Commit changes
-  git log          - Show commit history
-  git clone <url>  - Clone repository
-  git init         - Initialize new repository`;
-            break;
-          case 'git status':
-            result = `On branch ${currentBranch}
-Your branch is up to date with 'origin/${currentBranch}'.
-
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes)
-
-        modified:   src/components/Terminal.tsx
-        modified:   src/components/IDELayout.tsx
-
-no changes added to commit (use "git add" and/or "git commit -a")`;
-            break;
-          case 'git branch':
-            result = `* ${currentBranch}
-  develop
-  feature/terminal-integration`;
-            break;
-          case 'git pull':
-            result = `From github.com:${currentRepo}
- * branch            ${currentBranch}     -> FETCH_HEAD
-Already up to date.`;
-            resultType = 'success';
-            break;
-          case 'git push':
-            result = `Enumerating objects: 5, done.
-Counting objects: 100% (5/5), done.
-Delta compression using up to 8 threads
-Compressing objects: 100% (3/3), done.
-Writing objects: 100% (3/3), 1.2 KiB | 1.2 MiB/s, done.
-Total 3 (delta 2), reused 0 (delta 0)
-To github.com:${currentRepo}.git
-   abc1234..def5678  ${currentBranch} -> ${currentBranch}`;
-            resultType = 'success';
-            break;
-          case 'git add .':
-            result = 'Changes staged for commit.';
-            resultType = 'success';
-            break;
-          case 'git log':
-            result = `commit def5678901234567890123456789012345678901
-Author: Developer <dev@example.com>
-Date:   ${new Date().toLocaleString()}
-
-    Enhanced terminal with GitHub integration
-
-commit abc1234567890123456789012345678901234567
-Author: Developer <dev@example.com>
-Date:   ${new Date(Date.now() - 86400000).toLocaleString()}
-
-    Initial terminal implementation`;
-            break;
-          default:
-            if (cmd.startsWith('git checkout ')) {
-              const branch = args[2];
-              if (branch) {
-                setCurrentBranch(branch);
-                result = `Switched to branch '${branch}'`;
-                resultType = 'success';
-              } else {
-                result = 'Error: Branch name required';
-                resultType = 'error';
-              }
-            } else if (cmd.startsWith('git commit -m ')) {
-              const message = command.substring(14).replace(/"/g, '');
-              result = `[${currentBranch} def5678] ${message}
- 2 files changed, 45 insertions(+), 2 deletions(-)`;
-              resultType = 'success';
+      if (cmd.startsWith('cd ')) {
+        const newPath = cmd.substring(3).trim();
+        if (newPath) {
+          try {
+            const response = await fetch('/api/files', {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              setCurrentPath(newPath);
+              addOutput('success', `Changed directory to: ${newPath}`);
+              if (onFileSystemChange) onFileSystemChange();
             } else {
-              result = `git: '${args[1]}' is not a git command. See 'git help'.`;
-              resultType = 'error';
+              addOutput('error', `cd: no such file or directory: ${newPath}`);
             }
-            break;
+          } catch (error) {
+            addOutput('error', `cd: ${newPath}: No such file or directory`);
+          }
+        } else {
+          addOutput('error', 'cd: missing operand');
         }
+        setIsRunning(false);
+        return;
       }
-    }
-    // Regular terminal commands
-    else {
-      switch (cmd) {
-        case 'help':
-          result = `Available commands:
-  help     - Show this help message
-  ls       - List files in current directory
-  pwd      - Show current directory
-  clear    - Clear terminal
-  echo <text> - Echo text back
-  node -v  - Show Node.js version
-  npm -v   - Show npm version
-  git <command> - Git commands (use 'git help' for details)
-  github status - Show GitHub connection status`;
-          break;
-        case 'ls':
-          result = 'src/  package.json  README.md  node_modules/  .git/';
-          break;
-        case 'pwd':
-          result = '/workspace/my-project';
-          break;
-        case 'clear':
-          setOutput([]);
-          setIsRunning(false);
-          return;
-        case 'node -v':
-          result = 'v18.17.0';
-          break;
-        case 'npm -v':
-          result = '9.6.7';
-          break;
-        case 'github status':
-          if (isConnected) {
-            result = `✓ Connected to GitHub
-Repository: ${currentRepo}
-Current Branch: ${currentBranch}
-Status: Active`;
-            resultType = 'success';
-          } else {
-            result = '✗ Not connected to GitHub. Use terminal settings to connect.';
-            resultType = 'error';
-          }
-          break;
-        default:
-          if (cmd.startsWith('echo ')) {
-            result = command.substring(5);
-          } else {
-            result = `Command not found: ${command}. Type 'help' for available commands.`;
-            resultType = 'error';
-          }
-          break;
-      }
-    }
 
-    setOutput(prev => [...prev, { type: resultType, content: result }]);
-    setIsRunning(false);
+      if (cmd === 'ls' || cmd.startsWith('ls ')) {
+        try {
+          const response = await fetch(`/api/files?path=${encodeURIComponent(currentPath)}`);
+          const data = await response.json();
+          
+          if (response.ok) {
+            const fileList = data.files.map((file: any) => {
+              const indicator = file.type === 'directory' ? '/' : '';
+              return `${file.name}${indicator}`;
+            }).join('  ');
+            
+            addOutput('output', fileList || 'Empty directory');
+          } else {
+            addOutput('error', data.error || 'Failed to list directory');
+          }
+        } catch (error) {
+          addOutput('error', 'Failed to list directory');
+        }
+        setIsRunning(false);
+        return;
+      }
+
+      if (cmd.startsWith('mkdir ')) {
+        const dirName = cmd.substring(6).trim();
+        if (dirName) {
+          try {
+            const response = await fetch('/api/files/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                path: `${currentPath}/${dirName}`,
+                type: 'directory'
+              })
+            });
+            
+            if (response.ok) {
+              addOutput('success', `Directory created: ${dirName}`);
+              if (onFileSystemChange) onFileSystemChange();
+            } else {
+              const data = await response.json();
+              addOutput('error', data.error || 'Failed to create directory');
+            }
+          } catch (error) {
+            addOutput('error', 'Failed to create directory');
+          }
+        } else {
+          addOutput('error', 'mkdir: missing operand');
+        }
+        setIsRunning(false);
+        return;
+      }
+
+      if (cmd.startsWith('touch ')) {
+        const fileName = cmd.substring(6).trim();
+        if (fileName) {
+          try {
+            const response = await fetch('/api/files/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                path: `${currentPath}/${fileName}`,
+                type: 'file',
+                content: ''
+              })
+            });
+            
+            if (response.ok) {
+              addOutput('success', `File created: ${fileName}`);
+              if (onFileSystemChange) onFileSystemChange();
+            } else {
+              const data = await response.json();
+              addOutput('error', data.error || 'Failed to create file');
+            }
+          } catch (error) {
+            addOutput('error', 'Failed to create file');
+          }
+        } else {
+          addOutput('error', 'touch: missing file operand');
+        }
+        setIsRunning(false);
+        return;
+      }
+
+      if (cmd.startsWith('cat ')) {
+        const fileName = cmd.substring(4).trim();
+        if (fileName) {
+          try {
+            const response = await fetch(`/api/files/content?path=${encodeURIComponent(`${currentPath}/${fileName}`)}`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              addOutput('output', data.content);
+            } else {
+              const data = await response.json();
+              addOutput('error', data.error || 'Failed to read file');
+            }
+          } catch (error) {
+            addOutput('error', 'Failed to read file');
+          }
+        } else {
+          addOutput('error', 'cat: missing file operand');
+        }
+        setIsRunning(false);
+        return;
+      }
+
+      if (cmd.startsWith('rm ')) {
+        const fileName = cmd.substring(3).trim();
+        if (fileName) {
+          try {
+            const response = await fetch('/api/files', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                path: `${currentPath}/${fileName}`
+              })
+            });
+            
+            if (response.ok) {
+              addOutput('success', `Removed: ${fileName}`);
+              if (onFileSystemChange) onFileSystemChange();
+            } else {
+              const data = await response.json();
+              addOutput('error', data.error || 'Failed to remove file');
+            }
+          } catch (error) {
+            addOutput('error', 'Failed to remove file');
+          }
+        } else {
+          addOutput('error', 'rm: missing operand');
+        }
+        setIsRunning(false);
+        return;
+      }
+
+      if (cmd === 'help') {
+        addOutput('output', `Available commands:
+  ls              - List files and directories
+  cd <path>       - Change directory
+  pwd             - Print working directory
+  mkdir <name>    - Create directory
+  touch <name>    - Create empty file
+  cat <file>      - Display file contents
+  rm <file>       - Remove file/directory
+  clear           - Clear terminal
+  help            - Show this help
+  
+  Any other command will be executed as a shell command.`);
+        setIsRunning(false);
+        return;
+      }
+
+      // Execute other commands via backend
+      const response = await fetch('/api/terminal/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: cmd,
+          cwd: currentPath
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.stdout) {
+        addOutput('output', result.stdout);
+      }
+      
+      if (result.stderr) {
+        addOutput('error', result.stderr);
+      }
+      
+      if (result.exitCode !== 0 && !result.stdout && !result.stderr) {
+        addOutput('error', `Command exited with code ${result.exitCode}`);
+      }
+
+      // Update current path if command might have changed it
+      if (cmd.includes('cd') || cmd.includes('mkdir') || cmd.includes('rm')) {
+        if (onFileSystemChange) onFileSystemChange();
+      }
+
+    } catch (error) {
+      addOutput('error', 'Failed to execute command');
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -214,8 +284,8 @@ Status: Active`;
 
   const clearTerminal = () => {
     setOutput([
-      { type: 'output', content: 'WebIDE Terminal v1.0.0 - GitHub Integration Enabled' },
-      { type: 'output', content: 'Type "help" for available commands or "git help" for Git commands.' },
+      { type: 'output', content: 'WebIDE Terminal v1.0.0', timestamp: new Date() },
+      { type: 'output', content: 'Type commands to interact with the file system.', timestamp: new Date() },
     ]);
   };
 
@@ -230,12 +300,7 @@ Status: Active`;
         <div className="flex items-center gap-2">
           <TerminalIcon className="w-4 h-4" />
           <span className="text-sm font-medium">Terminal</span>
-          {isConnected && (
-            <div className="flex items-center gap-1 px-2 py-1 bg-success/20 text-success text-xs rounded-full">
-              <Github className="w-3 h-3" />
-              <span>Connected</span>
-            </div>
-          )}
+          <span className="text-xs text-muted-foreground">{currentPath}</span>
         </div>
         <div className="flex items-center gap-1">
           {/* Terminal Settings */}
@@ -266,38 +331,6 @@ Status: Active`;
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="github-token">GitHub Token (Optional)</Label>
-                  <Input
-                    id="github-token"
-                    type="password"
-                    placeholder="ghp_xxxxxxxxxxxx"
-                    value={githubToken}
-                    onChange={(e) => setGithubToken(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="repo">Repository</Label>
-                  <Input
-                    id="repo"
-                    placeholder="username/repository"
-                    value={currentRepo}
-                    onChange={(e) => setCurrentRepo(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="branch">Default Branch</Label>
-                  <Input
-                    id="branch"
-                    placeholder="main"
-                    value={currentBranch}
-                    onChange={(e) => setCurrentBranch(e.target.value)}
-                  />
-                </div>
-                <Button onClick={connectToGithub} className="w-full">
-                  <Github className="w-4 h-4 mr-2" />
-                  Connect to GitHub
-                </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -339,7 +372,7 @@ Status: Active`;
                 : line.type === 'error' 
                   ? 'text-destructive' 
                   : line.type === 'success'
-                    ? 'text-success'
+                    ? 'text-accent'
                     : 'text-foreground'
             }`}
           >
@@ -360,7 +393,7 @@ Status: Active`;
           <Input
             value={currentInput}
             onChange={(e) => setCurrentInput(e.target.value)}
-            placeholder="Enter command... (try 'git help' for Git commands)"
+            placeholder="Enter command... (type 'help' for available commands)"
             className="font-mono text-sm border-none bg-transparent p-0 focus-visible:ring-0"
             autoFocus
             disabled={isRunning}

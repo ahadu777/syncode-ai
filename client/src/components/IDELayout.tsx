@@ -12,15 +12,20 @@ import { Button } from '@/components/ui/button';
 export const IDELayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activePanel, setActivePanel] = useState<'terminal' | 'ai' | 'agent' | null>('terminal');
-  const [openFiles, setOpenFiles] = useState([
-    { name: 'welcome.js', content: '// Welcome to your AI-powered IDE!\n// Now with free unlimited AI agents!\nconsole.log("Hello, AI World!");', language: 'javascript' }
+  const [openFiles, setOpenFiles] = useState<Array<{ name: string; content: string; language: string; path?: string }>>([
+    { name: 'welcome.js', content: '// Welcome to your AI-powered IDE!\n// Now with free unlimited AI agents!\nconsole.log("Hello, AI World!");', language: 'javascript', path: '/workspace/welcome.js' }
   ]);
   const [activeFileIndex, setActiveFileIndex] = useState(0);
+  const [fileExplorerRefresh, setFileExplorerRefresh] = useState(0);
 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
   
   const togglePanel = (panel: 'terminal' | 'ai' | 'agent') => {
     setActivePanel(activePanel === panel ? null : panel);
+  };
+
+  const handleFileSystemChange = () => {
+    setFileExplorerRefresh(prev => prev + 1);
   };
 
   return (
@@ -82,24 +87,34 @@ export const IDELayout = () => {
             setOpenFiles={setOpenFiles}
             activeFileIndex={activeFileIndex}
             setActiveFileIndex={setActiveFileIndex}
+            refreshTrigger={fileExplorerRefresh}
           />
         </div>
 
-        {/* Editor Area */}
-        <div className="flex-1 flex flex-col">
-          <EditorArea 
-            openFiles={openFiles}
-            setOpenFiles={setOpenFiles}
-            activeFileIndex={activeFileIndex}
-            setActiveFileIndex={setActiveFileIndex}
-          />
+        {/* Main Content Area */}
+        <div className="flex-1 flex">
+          {/* Editor Area */}
+          <div className="flex-1 flex flex-col">
+            <EditorArea 
+              openFiles={openFiles}
+              setOpenFiles={setOpenFiles}
+              activeFileIndex={activeFileIndex}
+              setActiveFileIndex={setActiveFileIndex}
+            />
 
-          {/* Bottom Panel */}
-          {activePanel && (
-            <div className="h-80 border-t border-border">
-              {activePanel === 'terminal' && <Terminal />}
-              {activePanel === 'ai' && <AIAssistant />}
-              {activePanel === 'agent' && <AIAgentMode />}
+            {/* Bottom Panel */}
+            {activePanel && activePanel !== 'ai' && (
+              <div className="h-80 border-t border-border">
+                {activePanel === 'terminal' && <Terminal onFileSystemChange={handleFileSystemChange} />}
+                {activePanel === 'agent' && <AIAgentMode />}
+              </div>
+            )}
+          </div>
+
+          {/* Right Panel - AI Assistant */}
+          {activePanel === 'ai' && (
+            <div className="w-96 border-l border-border">
+              <AIAssistant />
             </div>
           )}
         </div>
